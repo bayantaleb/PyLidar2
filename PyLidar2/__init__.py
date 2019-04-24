@@ -2,12 +2,12 @@ import serial
 import time
 import math
 name = "PyLidar2"
-class YdLidarX4:
+class YdLidarf4:
     """Deals with X4 version of Ydlidar from http://www.ydlidar.com/"""
     def __init__(self,port):
         """Initialize the connection and set port and baudrate."""
         self.__port = port
-        self.__baudrate = 128000
+        self.__baudrate = 230400
         self.__is_scanning = False
         self.__is_connected = False
     def Connect(self):
@@ -56,15 +56,15 @@ class YdLidarX4:
     def __calculate(cls, d):
         ddict=[]
         LSN=ord(d[1])
-        Angle_fsa = ((YdLidarX4.__addhex(d[2],d[3])>>1)/64.0)+YdLidarX4.__AngleCorr(YdLidarX4.__addhex(d[8],d[9]))
-        Angle_lsa = ((YdLidarX4.__addhex(d[4],d[5])>>1)/64.0)+YdLidarX4.__AngleCorr(YdLidarX4.__addhex(d[LSN+6],d[LSN+7]))
+        Angle_fsa = ((YdLidarf4.__addhex(d[2],d[3])>>1)/64.0)+YdLidarf4.__AngleCorr(YdLidarf4.__addhex(d[8],d[9]))
+        Angle_lsa = ((YdLidarf4.__addhex(d[4],d[5])>>1)/64.0)+YdLidarf4.__AngleCorr(YdLidarf4.__addhex(d[LSN+6],d[LSN+7]))
         if Angle_fsa<Angle_lsa:
             Angle_diff = Angle_lsa-Angle_fsa
         else:
             Angle_diff = 360+Angle_lsa-Angle_fsa
         for i in range(0,2*LSN,2):
-            dist_i = YdLidarX4.__addhex(d[8+i],d[8+i+1])
-            Angle_i_tmp = ((Angle_diff/float(LSN))*(i/2))+Angle_fsa+YdLidarX4.__AngleCorr(dist_i)
+            dist_i = YdLidarf4.__addhex(d[8+i],d[8+i+1])
+            Angle_i_tmp = ((Angle_diff/float(LSN))*(i/2))+Angle_fsa+YdLidarf4.__AngleCorr(dist_i)
             if Angle_i_tmp > 360:
                 Angle_i = Angle_i_tmp-360
             elif Angle_i_tmp < 0:
@@ -76,11 +76,11 @@ class YdLidarX4:
     @classmethod
     def __checksum(cls, data):
         try:
-            ocs = YdLidarX4.__addhex(data[6],data[7])
+            ocs = YdLidarf4.__addhex(data[6],data[7])
             LSN = ord(data[1])
-            cs = 0x55AA^YdLidarX4.__addhex(data[0],data[1])^YdLidarX4.__addhex(data[2],data[3])^YdLidarX4.__addhex(data[4],data[5])
+            cs = 0x55AA^YdLidarf4.__addhex(data[0],data[1])^YdLidarf4.__addhex(data[2],data[3])^YdLidarf4.__addhex(data[4],data[5])
             for i in range(0,2*LSN,2):
-                cs = cs^YdLidarX4.__addhex(data[8+i],data[8+i+1]) 
+                cs = cs^YdLidarf4.__addhex(data[8+i],data[8+i+1]) 
             if(cs==ocs):
                 return True
             else:
